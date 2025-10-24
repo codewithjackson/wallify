@@ -10,9 +10,17 @@ export default function Modal({ item: initialItem, onClose }) {
   const [item, setItem] = useState(initialItem);
   const [similar, setSimilar] = useState([]);
   const [downloading, setDownloading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const fav = useFavorites();
-  const isFav = fav.exists(item.id);
 
+  // ✅ Run only on client (avoids SSR errors)
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const isFav = isClient ? fav.exists(item.id) : false;
+
+  // ✅ Fetch similar wallpapers
   useEffect(() => {
     let active = true;
     (async () => {
@@ -29,8 +37,9 @@ export default function Modal({ item: initialItem, onClose }) {
     return () => { active = false; };
   }, [item]);
 
-  // ✅ Updated download to use /api/download route
+  // ✅ Download via API route
   async function download() {
+    if (!isClient) return;
     try {
       setDownloading(true);
       const imageUrl = item.full || item.thumbnail;
@@ -59,21 +68,25 @@ export default function Modal({ item: initialItem, onClose }) {
     }
   }
 
+  // ✅ Favorites toggle
   function toggleFav() {
+    if (!isClient) return;
     fav.toggle({
       id: item.id,
       url: item.full || item.thumbnail,
       title: item.title,
       description: item.description,
-      tags: item.tags
+      tags: item.tags,
     });
-    toast.success(isFav ? 'Removed from favorites' : 'Added to favorites');
+    toast.success(isFav ? 'Removed from favorites 💔' : 'Added to favorites 💖');
   }
 
+  // ✅ Safe wallpaper setting
   function setAsWallpaper() {
+    if (!isClient) return;
     const imageUrl = item.full || item.thumbnail;
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+    const isPWA = typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches;
 
     if (isAndroid && isPWA) {
       try {
@@ -88,9 +101,11 @@ export default function Modal({ item: initialItem, onClose }) {
       window.open(imageUrl, '_blank');
       toast('Open the image and set it as wallpaper manually 🌌');
     } else {
-      toast('Automatic wallpaper setting works on Android PWAs only 💫');
+      toast('Automatic wallpaper setup works on Android PWAs only 💫');
     }
   }
+
+  if (!isClient) return null; // ✅ Skip SSR render safely
 
   return (
     <AnimatePresence>
