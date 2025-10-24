@@ -8,11 +8,15 @@ export const metadata = {
   title: 'Wallify',
   description: 'Premium wallpapers — Wallify',
   manifest: '/manifest.json',
-  themeColor: '#0b0f17',
   icons: {
     icon: '/icons/icon-192x192.png',
     apple: '/icons/icon-192x192.png',
   },
+};
+
+// ✅ Move themeColor here (Next.js 15+ requirement)
+export const viewport = {
+  themeColor: '#0b0f17',
 };
 
 export default function RootLayout({ children }) {

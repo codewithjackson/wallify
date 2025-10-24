@@ -27,23 +27,33 @@ export default function LeftDrawer({ onClose }) {
   const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
-    // 🧠 Check if already installed
+    // ✅ Detect standalone mode
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setInstalled(true);
       return;
     }
 
-    // 📲 Listen for install prompt
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      console.log('📲 Install prompt event captured.');
-      window.deferredPrompt = e; // store globally too
-      setDeferredPrompt(e);
-      setCanInstall(true);
-      toast.success('🎉 App install ready! Open menu to install.');
+    const updatePrompt = () => {
+      if (window.deferredPrompt && !installed) {
+        setDeferredPrompt(window.deferredPrompt);
+        setCanInstall(true);
+        console.log('📲 Deferred prompt detected inside drawer.');
+      }
     };
 
-    // 🎉 Handle successful install
+    // Run immediately + retry once (Chrome sometimes delays prompt)
+    updatePrompt();
+    const retryTimer = setTimeout(updatePrompt, 2000);
+
+    // 📲 Listen for late prompt event too
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      window.deferredPrompt = e;
+      setDeferredPrompt(e);
+      setCanInstall(true);
+      toast.success('🎉 App install is ready!');
+    };
+
     const handleAppInstalled = () => {
       setInstalled(true);
       setCanInstall(false);
@@ -55,17 +65,12 @@ export default function LeftDrawer({ onClose }) {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    // 🔍 If prompt was captured in another component
-    if (window.deferredPrompt) {
-      setDeferredPrompt(window.deferredPrompt);
-      setCanInstall(true);
-    }
-
     return () => {
+      clearTimeout(retryTimer);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, []);
+  }, [installed]);
 
   const navTo = (path) => {
     onClose?.();
@@ -81,8 +86,7 @@ export default function LeftDrawer({ onClose }) {
 
     const promptEvent = deferredPrompt || window.deferredPrompt;
     if (!promptEvent) {
-      toast.error('⚠️ Install prompt not available yet.\nTry refreshing, then reopen this menu.');
-      console.warn('⚠️ No install prompt available.');
+      toast.error('⚠️ Install prompt not available yet.\nTry refreshing, then reopening this menu.');
       return;
     }
 

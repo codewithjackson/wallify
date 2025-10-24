@@ -9,6 +9,7 @@ import { toast } from 'react-hot-toast';
 export default function Modal({ item: initialItem, onClose }) {
   const [item, setItem] = useState(initialItem);
   const [similar, setSimilar] = useState([]);
+  const [downloading, setDownloading] = useState(false);
   const fav = useFavorites();
   const isFav = fav.exists(item.id);
 
@@ -28,14 +29,34 @@ export default function Modal({ item: initialItem, onClose }) {
     return () => { active = false; };
   }, [item]);
 
-  function download() {
-    const a = document.createElement('a');
-    a.href = item.full || item.thumbnail;
-    a.download = `wallify-${item.id}.jpg`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    toast.success('Wallpaper downloaded!');
+  // ✅ Updated download to use /api/download route
+  async function download() {
+    try {
+      setDownloading(true);
+      const imageUrl = item.full || item.thumbnail;
+      if (!imageUrl) throw new Error('No image URL found');
+
+      const response = await fetch(`/api/download?url=${encodeURIComponent(imageUrl)}`);
+      if (!response.ok) throw new Error('Failed to fetch image');
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `wallify-${item.id || Math.random().toString(36).slice(2)}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      toast.success('🎉 Download started!');
+    } catch (err) {
+      console.error('Download failed:', err);
+      toast.error('Failed to download image 😢');
+    } finally {
+      setDownloading(false);
+    }
   }
 
   function toggleFav() {
@@ -49,7 +70,6 @@ export default function Modal({ item: initialItem, onClose }) {
     toast.success(isFav ? 'Removed from favorites' : 'Added to favorites');
   }
 
-  // ✅ Set as Wallpaper logic
   function setAsWallpaper() {
     const imageUrl = item.full || item.thumbnail;
     const isAndroid = /Android/i.test(navigator.userAgent);
@@ -105,16 +125,19 @@ export default function Modal({ item: initialItem, onClose }) {
             </div>
 
             <div className="space-y-4">
-              {/* === Action Buttons === */}
               <div className="flex flex-wrap items-center gap-2">
                 <button onClick={toggleFav} className="px-3 py-2 rounded-xl bg-white/6 flex items-center gap-1">
                   <Heart className={isFav ? 'text-red-400' : ''} size={16} />
                   <span>Favorite</span>
                 </button>
 
-                <button onClick={download} className="px-3 py-2 rounded-xl bg-white/6 flex items-center gap-1">
+                <button
+                  onClick={download}
+                  disabled={downloading}
+                  className={`px-3 py-2 rounded-xl bg-white/6 flex items-center gap-1 ${downloading ? 'opacity-70 cursor-wait' : ''}`}
+                >
                   <Download size={16} />
-                  <span>Download</span>
+                  <span>{downloading ? 'Downloading...' : 'Download'}</span>
                 </button>
 
                 <button onClick={setAsWallpaper} className="px-3 py-2 rounded-xl bg-white/6 flex items-center gap-1">
@@ -134,7 +157,6 @@ export default function Modal({ item: initialItem, onClose }) {
                 </button>
               </div>
 
-              {/* === Wallpaper Info === */}
               <div>
                 <h3 className="text-lg font-semibold">{item.title || 'Wallpaper'}</h3>
                 <p className="text-sm text-gray-300">
@@ -142,7 +164,6 @@ export default function Modal({ item: initialItem, onClose }) {
                 </p>
               </div>
 
-              {/* === Similar Wallpapers === */}
               <div>
                 <div className="text-sm text-gray-300 mb-2">✨ You Might Also Like</div>
                 <div className="flex gap-3 overflow-x-auto pb-2 fade-left fade-right">

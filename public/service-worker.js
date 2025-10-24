@@ -1,103 +1,71 @@
-// ✅ Wallify Unified Service Worker
-const CACHE_NAME = 'wallify-cache-v3';
-const OFFLINE_URL = '/offline.html';
-const CORE_ASSETS = [
-  '/',
+const CACHE_NAME = 'wallify-cache-v1';
+const ASSETS_TO_CACHE = [
+  '/', // main page
+  '/favicon.ico',
   '/manifest.json',
-  '/offline.html',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png'
 ];
 
-// 🔔 Notify all active clients (for optional toast updates)
-function notifyClients(type, message) {
-  self.clients.matchAll({ includeUncontrolled: true }).then((clients) => {
-    clients.forEach((client) => {
-      client.postMessage({ type, message });
-    });
-  });
-}
-
-// 🧩 Install event — pre-cache core assets
+// 🧠 Install service worker
 self.addEventListener('install', (event) => {
-  console.log('📦 Installing Wallify service worker...');
+  console.log('📦 Service Worker: Installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(CORE_ASSETS))
-      .then(() => notifyClients('INFO', '✅ Core assets cached successfully!'))
-      .catch(() => notifyClients('ERROR', '❌ Failed to cache core assets.'))
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('✅ Caching core assets...');
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
   );
   self.skipWaiting();
 });
 
-// 🔄 Activate event — cleanup old caches
+// 🚀 Activate service worker
 self.addEventListener('activate', (event) => {
-  console.log('♻️ Activating new service worker...');
+  console.log('🔁 Service Worker: Activated');
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log('🗑 Deleting old cache:', key);
+        keys
+          .filter((key) => key !== CACHE_NAME)
+          .map((key) => {
+            console.log(`🗑️ Removing old cache: ${key}`);
             return caches.delete(key);
-          }
-        })
-      )
-    ).then(() => {
-      self.clients.claim();
-      notifyClients('INFO', 'Service worker activated!');
-    })
-  );
-});
-
-// 🌐 Fetch event — smart caching strategy
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  if (req.method !== 'GET') return;
-
-  // Cache-first for images & videos
-  if (req.destination === 'image' || req.destination === 'video') {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        if (cached) return cached;
-        return fetch(req)
-          .then((networkRes) => {
-            const copy = networkRes.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-            notifyClients('DOWNLOAD_COMPLETE', `${req.destination} cached for offline use.`);
-            return networkRes;
           })
-          .catch(() => cached || caches.match(OFFLINE_URL));
-      })
-    );
-    return;
-  }
-
-  // Network-first for everything else
-  event.respondWith(
-    fetch(req)
-      .then((networkRes) => {
-        const copy = networkRes.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-        return networkRes;
-      })
-      .catch(() =>
-        caches.match(req).then((cached) => cached || caches.match(OFFLINE_URL))
       )
+    )
+  );
+  self.clients.claim();
+});
+
+// ⚡ Fetch event: network-first, fallback to cache
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  if (request.method !== 'GET') return;
+
+  event.respondWith(
+    fetch(request)
+      .then((response) => {
+        // Cache successful responses
+        const cloned = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
+        return response;
+      })
+      .catch(async () => {
+        const cached = await caches.match(request);
+        return (
+          cached ||
+          new Response('You are offline. Please reconnect.', {
+            status: 503,
+            headers: { 'Content-Type': 'text/plain' },
+          })
+        );
+      })
   );
 });
 
-// 💬 Message listener for update requests
+// 🔔 Listen for skipWaiting message (for app updates)
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
-});
-
-// 📲 Install prompt support
-self.addEventListener('beforeinstallprompt', (e) => {
-  console.log('📱 Install prompt captured by service worker.');
-  e.preventDefault();
-  self.deferredPrompt = e;
-  notifyClients('INSTALL_READY', 'App install prompt captured.');
 });

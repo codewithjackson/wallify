@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Download, Loader2 } from 'lucide-react'; // Added loader icon
+import { Heart, Download, Loader2 } from 'lucide-react';
 import { useFavorites } from '../hooks/useFavorites';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
@@ -13,28 +13,34 @@ export default function WallpaperCard({ item }) {
   const fav = useFavorites();
   const isFav = fav.exists(item.id);
 
+  // ✅ Download through our own Next.js route to bypass CORS
   async function download() {
     try {
       setDownloading(true);
       const url = item.full || item.thumbnail;
+      if (!url) throw new Error('No image URL found');
 
-      const res = await fetch(url);
+      // Call our local API route
+      const res = await fetch(`/api/download?url=${encodeURIComponent(url)}`);
       if (!res.ok) throw new Error('Failed to fetch image');
 
       const blob = await res.blob();
       const blobUrl = URL.createObjectURL(blob);
 
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = `wallify-${item.id || Math.random().toString(36).slice(2)}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      // Trigger download instantly
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `wallify-${item.id || Math.random().toString(36).slice(2)}.jpg`;
+      document.body.appendChild(link);
+      link.click();
 
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 1500);
-      toast.success('Download started 🎉');
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+
+      toast.success('🎉 Download started!');
     } catch (err) {
-      console.error(err);
+      console.error('Download failed:', err);
       toast.error('Failed to download image 😢');
     } finally {
       setDownloading(false);
@@ -47,7 +53,7 @@ export default function WallpaperCard({ item }) {
       url: item.full || item.thumbnail,
       title: item.title,
       description: item.description,
-      tags: item.tags
+      tags: item.tags,
     });
     toast.success(!isFav ? 'Added to favorites 💖' : 'Removed from favorites 💔');
   }
@@ -91,7 +97,9 @@ export default function WallpaperCard({ item }) {
               ) : (
                 <Download size={14} />
               )}
-              <span className="text-xs">{downloading ? 'Downloading' : ''}</span>
+              <span className="text-xs">
+                {downloading ? 'Downloading...' : ''}
+              </span>
             </button>
 
             <button
