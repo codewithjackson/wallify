@@ -13,23 +13,28 @@ export default function WallpaperCard({ item }) {
   const fav = useFavorites();
   const isFav = fav.exists(item.id);
 
+  // ✅ Download through our own Next.js route to bypass CORS
   async function download() {
     try {
       setDownloading(true);
       const url = item.full || item.thumbnail;
       if (!url) throw new Error('No image URL found');
 
+      // Call our local API route
       const res = await fetch(`/api/download?url=${encodeURIComponent(url)}`);
       if (!res.ok) throw new Error('Failed to fetch image');
 
       const blob = await res.blob();
       const blobUrl = URL.createObjectURL(blob);
 
+      // Trigger download instantly
       const link = document.createElement('a');
       link.href = blobUrl;
       link.download = `wallify-${item.id || Math.random().toString(36).slice(2)}.jpg`;
       document.body.appendChild(link);
       link.click();
+
+      // Cleanup
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
 
@@ -57,14 +62,13 @@ export default function WallpaperCard({ item }) {
     <>
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="rounded-xl overflow-hidden relative group bg-white/5"
+        className="rounded-xl overflow-hidden relative group bg-white/3"
       >
-        {/* 🖼️ Image */}
-        <div className="w-full h-52 bg-white/10 overflow-hidden">
+        <div className="w-full h-52 bg-white/3 overflow-hidden">
           <img
             src={item.thumbnail || item.full}
             alt={item.title || 'wallpaper'}
-            className={`w-full h-52 object-cover transition-all duration-500 ${
+            className={`w-full h-52 object-cover transition-all duration-400 ${
               loaded ? 'img-loaded' : 'img-blur'
             }`}
             loading="lazy"
@@ -72,45 +76,39 @@ export default function WallpaperCard({ item }) {
           />
         </div>
 
-        {/* 🎛️ Buttons */}
-        <div
-          className="
-            absolute inset-x-0 bottom-0 
-            flex flex-wrap justify-center gap-2 
-            p-3 
-            opacity-100 md:opacity-0 md:group-hover:opacity-100 
-            transition-all duration-300 
-            bg-gradient-to-t from-black/60 to-transparent
-          "
-        >
-          <button
-            onClick={() => setOpen(true)}
-            className="px-4 py-1.5 rounded-full bg-white/20 text-sm text-white hover:bg-white/30 backdrop-blur-sm transition"
-          >
-            View
-          </button>
+        <div className="absolute inset-0 flex items-end p-3 opacity-0 group-hover:opacity-100 transition">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setOpen(true)}
+              className="px-3 py-1 rounded-full bg-white/6"
+            >
+              View
+            </button>
 
-          <button
-            onClick={download}
-            disabled={downloading}
-            className={`px-4 py-1.5 rounded-full bg-white/20 text-sm text-white flex items-center gap-1 hover:bg-white/30 backdrop-blur-sm transition ${
-              downloading ? 'opacity-70 cursor-wait' : ''
-            }`}
-          >
-            {downloading ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Download size={14} />
-            )}
-            {downloading && <span>Downloading...</span>}
-          </button>
+            <button
+              onClick={download}
+              disabled={downloading}
+              className={`px-3 py-1 rounded-full bg-white/6 flex items-center gap-1 transition-all ${
+                downloading ? 'opacity-70 cursor-wait' : ''
+              }`}
+            >
+              {downloading ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <Download size={14} />
+              )}
+              <span className="text-xs">
+                {downloading ? 'Downloading...' : ''}
+              </span>
+            </button>
 
-          <button
-            onClick={toggleFav}
-            className="p-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition"
-          >
-            <Heart size={18} className={isFav ? 'text-red-400 fill-red-400' : 'text-white'} />
-          </button>
+            <button
+              onClick={toggleFav}
+              className="px-3 py-1 rounded-full bg-white/6"
+            >
+              <Heart className={isFav ? 'text-red-400' : ''} />
+            </button>
+          </div>
         </div>
       </motion.div>
 

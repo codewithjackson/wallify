@@ -15,7 +15,7 @@ export default function Navbar() {
     // ✅ Register service worker
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       if (!navigator.serviceWorker.controller) {
-        navigator.serviceWorker.register('/service-worker.js')
+        navigator.serviceWorker.register('/sw.js')
           .then(() => console.log('Service worker registered'))
           .catch(() => console.warn('Service worker registration failed'));
       }
@@ -59,60 +59,19 @@ export default function Navbar() {
     <>
       <header className="fixed inset-x-4 top-4 z-40">
         <div className="mx-auto max-w-6xl">
-          <div
-            className="
-              flex flex-wrap items-center justify-between
-              p-3 rounded-2xl card-glass
-              gap-3 sm:gap-4
-            "
-          >
-            {/* Left side */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-              <button
-                aria-label="menu"
-                onClick={() => setDrawerOpen(true)}
-                className="p-2 rounded-md hover:bg-white/10 transition"
-              >
-                <Menu size={22} />
-              </button>
+          <div className="flex items-center justify-between p-3 rounded-2xl card-glass">
+            <div className="flex items-center gap-3">
+              <button aria-label="menu" onClick={() => setDrawerOpen(true)} className="p-2 rounded-md hover:bg-white/3 transition"><Menu /></button>
               <div className="select-none">
-                <div className="text-white font-semibold tracking-widest text-base sm:text-lg">
-                  WALLIFY
-                </div>
+                <div className="text-white font-semibold tracking-widest text-lg" style={{ letterSpacing: 4 }}>WALLIFY</div>
               </div>
             </div>
 
-            {/* Right side */}
-            <div
-              className="
-                flex items-center justify-end
-                gap-2 sm:gap-3
-                flex-wrap
-              "
-            >
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="p-2 rounded-md hover:bg-white/10 transition"
-              >
-                <Search size={20} />
-              </button>
-              <a
-                href="/motion"
-                className="p-2 rounded-md hover:bg-white/10 transition"
-              >
-                <Film size={20} />
-              </a>
-              <a
-                href="/favorites"
-                className="p-2 rounded-md hover:bg-white/10 transition"
-              >
-                <Heart size={20} />
-              </a>
-              <button
-                className="p-2 rounded-md hover:bg-white/10 transition"
-              >
-                <Bell size={20} />
-              </button>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setSearchOpen(true)} className="p-2 rounded-md hover:bg-white/3 transition"><Search /></button>
+              <a href="/motion" className="p-2 rounded-md hover:bg-white/3 transition"><Film /></a>
+              <a href="/favorites" className="p-2 rounded-md hover:bg-white/3 transition"><Heart /></a>
+              <button className="p-2 rounded-md hover:bg-white/3 transition"><Bell /></button>
             </div>
           </div>
         </div>
