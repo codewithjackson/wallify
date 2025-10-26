@@ -19,7 +19,7 @@ export default function WallifyMotionComingSoon() {
         transition={{ delay: 0.5, duration: 1 }}
         className="text-gray-300 text-lg md:text-xl"
       >
-        Coming Soon... Stay tuned for stunning live wallpapers ✨
+        Coming Soon 🚧... Stay tuned for stunning live wallpapers ✨
       </motion.p>
 
       <motion.div
