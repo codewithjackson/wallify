@@ -57,21 +57,47 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-4 top-4 z-40">
-        <div className="mx-auto max-w-6xl">
-          <div className="flex items-center justify-between p-3 rounded-2xl card-glass">
-            <div className="flex items-center gap-3">
-              <button aria-label="menu" onClick={() => setDrawerOpen(true)} className="p-2 rounded-md hover:bg-white/3 transition"><Menu /></button>
+      <header className="fixed inset-x-2 top-3 z-40">
+        <div className="mx-auto max-w-6xl px-2 sm:px-4">
+          <div className="flex items-center justify-between p-3 rounded-2xl card-glass backdrop-blur-md">
+            
+            {/* Left Side */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                aria-label="menu"
+                onClick={() => setDrawerOpen(true)}
+                className="p-2 rounded-md hover:bg-white/10 transition"
+              >
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+
               <div className="select-none">
-                <div className="text-white font-semibold tracking-widest text-lg" style={{ letterSpacing: 4 }}>WALLIFY</div>
+                <div className="text-white font-semibold tracking-widest text-base sm:text-lg" style={{ letterSpacing: 3 }}>
+                  WALLIFY
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button onClick={() => setSearchOpen(true)} className="p-2 rounded-md hover:bg-white/3 transition"><Search /></button>
-              <a href="/motion" className="p-2 rounded-md hover:bg-white/3 transition"><Film /></a>
-              <a href="/favorites" className="p-2 rounded-md hover:bg-white/3 transition"><Heart /></a>
-              <button className="p-2 rounded-md hover:bg-white/3 transition"><Bell /></button>
+            {/* Right Side Icons */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="p-2 rounded-md hover:bg-white/10 transition"
+              >
+                <Search className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+
+              <a href="/motion" className="p-2 rounded-md hover:bg-white/10 transition">
+                <Film className="w-5 h-5 sm:w-6 sm:h-6" />
+              </a>
+
+              <a href="/favorites" className="p-2 rounded-md hover:bg-white/10 transition">
+                <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
+              </a>
+
+              <button className="p-2 rounded-md hover:bg-white/10 transition">
+                <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
             </div>
           </div>
         </div>
