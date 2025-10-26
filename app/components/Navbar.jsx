@@ -56,6 +56,35 @@ export default function Navbar() {
     }
   };
 
+  // ✅ Handle Notification Click
+  const handleNotificationClick = () => {
+    toast.custom((t) => (
+      <div
+        className={`${
+          t.visible ? 'animate-enter' : 'animate-leave'
+        } max-w-md w-full bg-white/10 backdrop-blur-md text-white p-4 rounded-xl shadow-lg border border-white/10`}
+      >
+        <div className="font-semibold text-lg mb-1 flex items-center gap-2">
+          <Bell size={18} /> Wallify Motion 🚀
+        </div>
+        <p className="text-sm text-gray-200">
+          Wallify Motion launching soon! Stay tuned for something aesthetic 🌈
+        </p>
+        <p className="text-sm mt-2">
+          📱 Need help or want to suggest an idea?{' '}
+          <a
+            href="https://wa.me/233550232938"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-400 underline hover:text-green-300"
+          >
+            Chat on WhatsApp
+          </a>
+        </p>
+      </div>
+    ));
+  };
+
   return (
     <>
       <header className="fixed inset-x-2 top-3 z-40">
@@ -88,16 +117,21 @@ export default function Navbar() {
                 <Search className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
-              {/* ✅ Updated Wallify Motion Link */}
+              {/* ✅ Wallify Motion */}
               <Link href="/wallify-motion" className="p-2 rounded-md hover:bg-white/10 transition">
                 <Film className="w-5 h-5 sm:w-6 sm:h-6" />
               </Link>
 
+              {/* Favorites */}
               <Link href="/favorites" className="p-2 rounded-md hover:bg-white/10 transition">
                 <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
               </Link>
 
-              <button className="p-2 rounded-md hover:bg-white/10 transition">
+              {/* ✅ Notification Bell */}
+              <button
+                onClick={handleNotificationClick}
+                className="p-2 rounded-md hover:bg-white/10 transition"
+              >
                 <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
