@@ -13,28 +13,24 @@ export default function WallpaperCard({ item }) {
   const fav = useFavorites();
   const isFav = fav.exists(item.id);
 
-  // ✅ Download through our own Next.js route to bypass CORS
   async function download() {
     try {
       setDownloading(true);
       const url = item.full || item.thumbnail;
       if (!url) throw new Error('No image URL found');
 
-      // Call our local API route
       const res = await fetch(`/api/download?url=${encodeURIComponent(url)}`);
       if (!res.ok) throw new Error('Failed to fetch image');
 
       const blob = await res.blob();
       const blobUrl = URL.createObjectURL(blob);
 
-      // Trigger download instantly
       const link = document.createElement('a');
       link.href = blobUrl;
       link.download = `wallify-${item.id || Math.random().toString(36).slice(2)}.jpg`;
       document.body.appendChild(link);
       link.click();
 
-      // Cleanup
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
 
@@ -62,13 +58,13 @@ export default function WallpaperCard({ item }) {
     <>
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="rounded-xl overflow-hidden relative group bg-white/3"
+        className="rounded-xl overflow-hidden relative group bg-white/5 backdrop-blur-md"
       >
         <div className="w-full h-52 bg-white/3 overflow-hidden">
           <img
             src={item.thumbnail || item.full}
             alt={item.title || 'wallpaper'}
-            className={`w-full h-52 object-cover transition-all duration-400 ${
+            className={`w-full h-52 object-cover transition-all duration-500 ${
               loaded ? 'img-loaded' : 'img-blur'
             }`}
             loading="lazy"
@@ -76,11 +72,12 @@ export default function WallpaperCard({ item }) {
           />
         </div>
 
-        <div className="absolute inset-0 flex items-end p-3 opacity-0 group-hover:opacity-100 transition">
-          <div className="flex gap-2">
+        {/* --- Button Overlay (responsive) --- */}
+        <div className="absolute inset-0 flex items-end justify-center p-3 opacity-0 group-hover:opacity-100 transition">
+          <div className="flex flex-wrap justify-center gap-2 w-full sm:w-auto">
             <button
               onClick={() => setOpen(true)}
-              className="px-3 py-1 rounded-full bg-white/6"
+              className="px-4 py-1.5 rounded-full bg-black/40 text-white text-sm font-medium backdrop-blur-md hover:bg-black/60 transition"
             >
               View
             </button>
@@ -88,7 +85,7 @@ export default function WallpaperCard({ item }) {
             <button
               onClick={download}
               disabled={downloading}
-              className={`px-3 py-1 rounded-full bg-white/6 flex items-center gap-1 transition-all ${
+              className={`px-4 py-1.5 rounded-full bg-black/40 text-white text-sm font-medium backdrop-blur-md flex items-center gap-1 hover:bg-black/60 transition ${
                 downloading ? 'opacity-70 cursor-wait' : ''
               }`}
             >
@@ -97,16 +94,16 @@ export default function WallpaperCard({ item }) {
               ) : (
                 <Download size={14} />
               )}
-              <span className="text-xs">
+              <span className="hidden sm:inline">
                 {downloading ? 'Downloading...' : ''}
               </span>
             </button>
 
             <button
               onClick={toggleFav}
-              className="px-3 py-1 rounded-full bg-white/6"
+              className="px-3 py-1.5 rounded-full bg-black/40 text-white backdrop-blur-md hover:bg-black/60 transition"
             >
-              <Heart className={isFav ? 'text-red-400' : ''} />
+              <Heart size={16} className={isFav ? 'text-red-400' : ''} />
             </button>
           </div>
         </div>
