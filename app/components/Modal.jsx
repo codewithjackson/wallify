@@ -8,36 +8,16 @@ import { toast } from 'react-hot-toast';
 
 export default function Modal({ item: initialItem, onClose }) {
   const [item, setItem] = useState(initialItem);
-  const [similar, setSimilar] = useState([]);
   const [downloading, setDownloading] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const fav = useFavorites();
 
-  // ✅ Run only on client (avoids SSR errors)
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   const isFav = isClient ? fav.exists(item.id) : false;
 
-  // ✅ Fetch similar wallpapers
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const q = (item.tags && item.tags[0]) || item.title || 'nature';
-        const res = await fetchWallpapers(q, 1);
-        if (!active) return;
-        const filtered = (res || []).filter(r => r.id !== item.id).slice(0, 12);
-        setSimilar(filtered);
-      } catch (e) {
-        console.warn('Modal similar fetch error', e);
-      }
-    })();
-    return () => { active = false; };
-  }, [item]);
-
-  // ✅ Download via API route
   async function download() {
     if (!isClient) return;
     try {
@@ -68,7 +48,6 @@ export default function Modal({ item: initialItem, onClose }) {
     }
   }
 
-  // ✅ Favorites toggle
   function toggleFav() {
     if (!isClient) return;
     fav.toggle({
@@ -81,7 +60,6 @@ export default function Modal({ item: initialItem, onClose }) {
     toast.success(isFav ? 'Removed from favorites 💔' : 'Added to favorites 💖');
   }
 
-  // ✅ Safe wallpaper setting
   function setAsWallpaper() {
     if (!isClient) return;
     const imageUrl = item.full || item.thumbnail;
@@ -105,7 +83,7 @@ export default function Modal({ item: initialItem, onClose }) {
     }
   }
 
-  if (!isClient) return null; // ✅ Skip SSR render safely
+  if (!isClient) return null;
 
   return (
     <AnimatePresence>
@@ -177,28 +155,6 @@ export default function Modal({ item: initialItem, onClose }) {
                 <p className="text-sm text-gray-300">
                   {item.description || (item.tags && item.tags.join(', ')) || 'Beautiful wallpaper'}
                 </p>
-              </div>
-
-              <div>
-                <div className="text-sm text-gray-300 mb-2">✨ You Might Also Like</div>
-                <div className="flex gap-3 overflow-x-auto pb-2 fade-left fade-right">
-                  {similar.map(s => (
-                    <button
-                      key={s.id}
-                      onClick={() => setItem(s)}
-                      className="w-[120px] h-[80px] rounded-lg overflow-hidden bg-white/4"
-                    >
-                      <img
-                        src={s.thumbnail || s.full}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-2 text-xs text-gray-400">
-                  Tap a thumbnail to view it in the modal.
-                </div>
               </div>
             </div>
           </div>
