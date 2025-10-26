@@ -5,6 +5,7 @@ import { AnimatePresence } from 'framer-motion';
 import LeftDrawer from './LeftDrawer';
 import SearchOverlay from './SearchOverlay';
 import toast from 'react-hot-toast';
+import Link from 'next/link';
 
 export default function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -87,13 +88,14 @@ export default function Navbar() {
                 <Search className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
-              <a href="/motion" className="p-2 rounded-md hover:bg-white/10 transition">
+              {/* ✅ Updated Wallify Motion Link */}
+              <Link href="/wallify-motion" className="p-2 rounded-md hover:bg-white/10 transition">
                 <Film className="w-5 h-5 sm:w-6 sm:h-6" />
-              </a>
+              </Link>
 
-              <a href="/favorites" className="p-2 rounded-md hover:bg-white/10 transition">
+              <Link href="/favorites" className="p-2 rounded-md hover:bg-white/10 transition">
                 <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
-              </a>
+              </Link>
 
               <button className="p-2 rounded-md hover:bg-white/10 transition">
                 <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
