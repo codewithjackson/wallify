@@ -13,8 +13,7 @@ export default function WallpaperCard({ item }) {
   const fav = useFavorites();
   const isFav = fav.exists(item.id);
 
-  // 👇 track touch position to prevent accidental taps
-  const touchStart = useRef({ x: 0, y: 0 });
+  const touchStart = useRef({ x: 0, y: 0, time: 0 });
   const touchMoved = useRef(false);
 
   const handleTouchStart = (e) => {
@@ -22,17 +21,21 @@ export default function WallpaperCard({ item }) {
     touchStart.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
+      time: Date.now(),
     };
   };
 
   const handleTouchMove = (e) => {
     const dx = Math.abs(e.touches[0].clientX - touchStart.current.x);
     const dy = Math.abs(e.touches[0].clientY - touchStart.current.y);
-    if (dx > 5 || dy > 5) touchMoved.current = true;
+    if (dx > 8 || dy > 8) touchMoved.current = true; // more lenient threshold
   };
 
   const handleClickSafe = (action) => (e) => {
-    if (touchMoved.current) return; // 👈 ignore if it was a scroll
+    e.stopPropagation(); // 🧱 prevent bubbling
+    const now = Date.now();
+    const touchDuration = now - touchStart.current.time;
+    if (touchMoved.current || touchDuration > 300) return; // ignore long/scroll gestures
     action(e);
   };
 
@@ -53,7 +56,6 @@ export default function WallpaperCard({ item }) {
       link.download = `wallify-${item.id || Math.random().toString(36).slice(2)}.jpg`;
       document.body.appendChild(link);
       link.click();
-
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
 
@@ -97,7 +99,7 @@ export default function WallpaperCard({ item }) {
           />
         </div>
 
-        {/* --- Button Overlay (responsive + safe tap) --- */}
+        {/* --- Button Overlay (tap-safe + responsive) --- */}
         <div className="absolute inset-0 flex items-end justify-center p-3 opacity-0 group-hover:opacity-100 transition">
           <div className="flex flex-wrap justify-center gap-2 w-full sm:w-auto">
             <button
