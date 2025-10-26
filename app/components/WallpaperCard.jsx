@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Download, Loader2 } from 'lucide-react';
 import { useFavorites } from '../hooks/useFavorites';
@@ -12,6 +12,29 @@ export default function WallpaperCard({ item }) {
   const [downloading, setDownloading] = useState(false);
   const fav = useFavorites();
   const isFav = fav.exists(item.id);
+
+  // 👇 track touch position to prevent accidental taps
+  const touchStart = useRef({ x: 0, y: 0 });
+  const touchMoved = useRef(false);
+
+  const handleTouchStart = (e) => {
+    touchMoved.current = false;
+    touchStart.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+  };
+
+  const handleTouchMove = (e) => {
+    const dx = Math.abs(e.touches[0].clientX - touchStart.current.x);
+    const dy = Math.abs(e.touches[0].clientY - touchStart.current.y);
+    if (dx > 5 || dy > 5) touchMoved.current = true;
+  };
+
+  const handleClickSafe = (action) => (e) => {
+    if (touchMoved.current) return; // 👈 ignore if it was a scroll
+    action(e);
+  };
 
   async function download() {
     try {
@@ -58,6 +81,8 @@ export default function WallpaperCard({ item }) {
     <>
       <motion.div
         whileHover={{ scale: 1.02 }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
         className="rounded-xl overflow-hidden relative group bg-white/5 backdrop-blur-md"
       >
         <div className="w-full h-52 bg-white/3 overflow-hidden">
@@ -72,18 +97,18 @@ export default function WallpaperCard({ item }) {
           />
         </div>
 
-        {/* --- Button Overlay (responsive) --- */}
+        {/* --- Button Overlay (responsive + safe tap) --- */}
         <div className="absolute inset-0 flex items-end justify-center p-3 opacity-0 group-hover:opacity-100 transition">
           <div className="flex flex-wrap justify-center gap-2 w-full sm:w-auto">
             <button
-              onClick={() => setOpen(true)}
+              onClick={handleClickSafe(() => setOpen(true))}
               className="px-4 py-1.5 rounded-full bg-black/40 text-white text-sm font-medium backdrop-blur-md hover:bg-black/60 transition"
             >
               View
             </button>
 
             <button
-              onClick={download}
+              onClick={handleClickSafe(download)}
               disabled={downloading}
               className={`px-4 py-1.5 rounded-full bg-black/40 text-white text-sm font-medium backdrop-blur-md flex items-center gap-1 hover:bg-black/60 transition ${
                 downloading ? 'opacity-70 cursor-wait' : ''
@@ -100,7 +125,7 @@ export default function WallpaperCard({ item }) {
             </button>
 
             <button
-              onClick={toggleFav}
+              onClick={handleClickSafe(toggleFav)}
               className="px-3 py-1.5 rounded-full bg-black/40 text-white backdrop-blur-md hover:bg-black/60 transition"
             >
               <Heart size={16} className={isFav ? 'text-red-400' : ''} />
