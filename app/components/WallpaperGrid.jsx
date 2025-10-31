@@ -147,11 +147,12 @@ export default function WallpaperGrid() {
         <div className="ptr-indicator text-center text-gray-400 py-3">Refreshing…</div>
       )}
 
+      {/* 🖼️ Premium Grid Layout */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {loading && items.length === 0 ? (
           skeletonArray.map((_, i) => (
             <div key={i} className="rounded-xl overflow-hidden relative">
-              <div className="w-full h-52 skeleton rounded-xl" />
+              <div className="w-full h-64 md:h-72 skeleton rounded-xl" />
             </div>
           ))
         ) : items.length === 0 ? (
