@@ -28,14 +28,14 @@ export default function WallpaperCard({ item }) {
   const handleTouchMove = (e) => {
     const dx = Math.abs(e.touches[0].clientX - touchStart.current.x);
     const dy = Math.abs(e.touches[0].clientY - touchStart.current.y);
-    if (dx > 8 || dy > 8) touchMoved.current = true; // more lenient threshold
+    if (dx > 8 || dy > 8) touchMoved.current = true;
   };
 
   const handleClickSafe = (action) => (e) => {
-    e.stopPropagation(); // 🧱 prevent bubbling
+    e.stopPropagation();
     const now = Date.now();
     const touchDuration = now - touchStart.current.time;
-    if (touchMoved.current || touchDuration > 300) return; // ignore long/scroll gestures
+    if (touchMoved.current || touchDuration > 300) return;
     action(e);
   };
 
@@ -85,22 +85,23 @@ export default function WallpaperCard({ item }) {
         whileHover={{ scale: 1.02 }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
-        className="rounded-xl overflow-hidden relative group bg-white/5 backdrop-blur-md"
+        className="rounded-2xl overflow-hidden relative group bg-white/5 backdrop-blur-md transition-all"
       >
-        <div className="w-full h-52 bg-white/3 overflow-hidden">
+        {/* 🖼️ Premium Height Wrapper */}
+        <div className="w-full h-72 md:h-80 lg:h-96 bg-white/5 overflow-hidden">
           <img
             src={item.thumbnail || item.full}
             alt={item.title || 'wallpaper'}
-            className={`w-full h-52 object-cover transition-all duration-500 ${
-              loaded ? 'img-loaded' : 'img-blur'
+            className={`w-full h-72 md:h-80 lg:h-96 object-cover transition-all duration-700 ease-out ${
+              loaded ? 'opacity-100' : 'opacity-0 scale-105 blur-md'
             }`}
             loading="lazy"
             onLoad={() => setLoaded(true)}
           />
         </div>
 
-        {/* --- Button Overlay (tap-safe + responsive) --- */}
-        <div className="absolute inset-0 flex items-end justify-center p-3 opacity-0 group-hover:opacity-100 transition">
+        {/* --- Overlay Buttons --- */}
+        <div className="absolute inset-0 flex items-end justify-center p-3 opacity-0 group-hover:opacity-100 transition duration-300">
           <div className="flex flex-wrap justify-center gap-2 w-full sm:w-auto">
             <button
               onClick={handleClickSafe(() => setOpen(true))}
