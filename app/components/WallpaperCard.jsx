@@ -1,6 +1,6 @@
 'use client';
-import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Download, Loader2 } from 'lucide-react';
 import { useFavorites } from '../hooks/useFavorites';
 import Modal from './Modal';
@@ -15,6 +15,15 @@ export default function WallpaperCard({ item }) {
 
   const touchStart = useRef({ x: 0, y: 0, time: 0 });
   const touchMoved = useRef(false);
+
+  // ✅ Prevent background scroll when modal is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [open]);
 
   const handleTouchStart = (e) => {
     touchMoved.current = false;
@@ -32,7 +41,7 @@ export default function WallpaperCard({ item }) {
   };
 
   const handleClickSafe = (action) => (e) => {
-    e.stopPropagation();
+    e.stopPropagation(); // prevent modal trigger
     const now = Date.now();
     const touchDuration = now - touchStart.current.time;
     if (touchMoved.current || touchDuration > 300) return;
@@ -81,18 +90,24 @@ export default function WallpaperCard({ item }) {
 
   return (
     <>
+      {/* 🖼️ Wallpaper Card */}
       <motion.div
         whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.97 }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
-        className="rounded-2xl overflow-hidden relative group bg-white/5 backdrop-blur-md transition-all"
+        onClick={() => setOpen(true)} // ✅ Opens modal when clicking image or anywhere on card
+        className="rounded-2xl overflow-hidden relative group bg-white/5 backdrop-blur-md transition-all cursor-pointer"
       >
-        {/* 🖼️ Premium Height Wrapper */}
-        <div className="w-full h-72 md:h-80 lg:h-96 bg-white/5 overflow-hidden">
+        {/* Image (Modal trigger zone) */}
+        <div
+          className="w-full h-72 md:h-80 lg:h-96 bg-white/5 overflow-hidden"
+          onClick={() => setOpen(true)} // ✅ Also ensures image area triggers modal
+        >
           <img
             src={item.thumbnail || item.full}
             alt={item.title || 'wallpaper'}
-            className={`w-full h-72 md:h-80 lg:h-96 object-cover transition-all duration-700 ease-out ${
+            className={`w-full h-full object-cover transition-all duration-700 ease-out ${
               loaded ? 'opacity-100' : 'opacity-0 scale-105 blur-md'
             }`}
             loading="lazy"
@@ -100,11 +115,14 @@ export default function WallpaperCard({ item }) {
           />
         </div>
 
-        {/* --- Overlay Buttons --- */}
-        <div className="absolute inset-0 flex items-end justify-center p-3 opacity-0 group-hover:opacity-100 transition duration-300">
+        {/* Overlay Buttons */}
+        <div
+          className="absolute inset-0 flex items-end justify-center p-3 opacity-0 group-hover:opacity-100 transition duration-300 z-10"
+          onClick={(e) => e.stopPropagation()} // ✅ stops modal when pressing buttons
+        >
           <div className="flex flex-wrap justify-center gap-2 w-full sm:w-auto">
             <button
-              onClick={handleClickSafe(() => setOpen(true))}
+              onClick={() => setOpen(true)}
               className="px-4 py-1.5 rounded-full bg-black/40 text-white text-sm font-medium backdrop-blur-md hover:bg-black/60 transition"
             >
               View
@@ -137,7 +155,17 @@ export default function WallpaperCard({ item }) {
         </div>
       </motion.div>
 
-      {open && <Modal item={item} onClose={() => setOpen(false)} />}
+      {/* 💫 Modal */}
+      <AnimatePresence>
+        {open && (
+          <Modal
+            key="wallpaper-modal"
+            item={item}
+            isOpen={open}
+            onClose={() => setOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }
