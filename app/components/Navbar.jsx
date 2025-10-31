@@ -78,7 +78,7 @@ export default function Navbar() {
             rel="noopener noreferrer"
             className="text-green-400 underline hover:text-green-300"
           >
-            Chat on WhatsApp
+            Join our channel on WhatsApp
           </a>
         </p>
       </div>
