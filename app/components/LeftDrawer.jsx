@@ -181,7 +181,7 @@ export default function LeftDrawer({ onClose }) {
           </ul>
         </div>
 
-        <div className="mt-6 text-xs text-gray-400">Built with ❤️ — Wallify</div>
+        <div className="mt-6 text-xs text-gray-400">Built by Ebo Jackson under E-Jacksons Teck ❤️ — Wallify</div>
       </motion.aside>
     </>
   );

@@ -71,9 +71,9 @@ export default function Navbar() {
           Wallify Motion launching soon! Stay tuned for something aesthetic 🌈
         </p>
         <p className="text-sm mt-2">
-          📱 Need help or want to suggest an idea?{' '}
+          📱 Need help or want to suggest an idea? Join our official WhatsApp channel for updates & support{' '}
           <a
-            href="https://wa.me/233550232938"
+            href="https://whatsapp.com/channel/0029Vakmy7WGehEVN1okQN3j"
             target="_blank"
             rel="noopener noreferrer"
             className="text-green-400 underline hover:text-green-300"
