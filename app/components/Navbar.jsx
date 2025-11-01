@@ -13,7 +13,6 @@ export default function Navbar() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
 
   useEffect(() => {
-    // ✅ Register service worker
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       if (!navigator.serviceWorker.controller) {
         navigator.serviceWorker.register('/sw.js')
@@ -22,7 +21,6 @@ export default function Navbar() {
       }
     }
 
-    // ✅ Listen for install prompt
     function beforeInstallHandler(e) {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -56,7 +54,6 @@ export default function Navbar() {
     }
   };
 
-  // ✅ Handle Notification Click
   const handleNotificationClick = () => {
     toast.custom((t) => (
       <div
@@ -101,11 +98,12 @@ export default function Navbar() {
                 <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
-              <div className="select-none">
-                <div className="text-white font-semibold tracking-widest text-base sm:text-lg" style={{ letterSpacing: 3 }}>
+              {/* ✅ Make Wallify clickable to go home */}
+              <Link href="/" className="select-none">
+                <div className="text-white font-semibold tracking-widest text-base sm:text-lg hover:text-rose-400 transition-all" style={{ letterSpacing: 3 }}>
                   WALLIFY
                 </div>
-              </div>
+              </Link>
             </div>
 
             {/* Right Side Icons */}
@@ -117,7 +115,7 @@ export default function Navbar() {
                 <Search className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
-              {/* ✅ Wallify Motion */}
+              {/* Wallify Motion */}
               <Link href="/wallify-motion" className="p-2 rounded-md hover:bg-white/10 transition">
                 <Film className="w-5 h-5 sm:w-6 sm:h-6" />
               </Link>
@@ -127,7 +125,7 @@ export default function Navbar() {
                 <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
               </Link>
 
-              {/* ✅ Notification Bell */}
+              {/* Notifications */}
               <button
                 onClick={handleNotificationClick}
                 className="p-2 rounded-md hover:bg-white/10 transition"
